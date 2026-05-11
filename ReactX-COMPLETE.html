@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReactX - Reaction Game</title>
+    <style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: #0a0e27;
+    color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 900px;
+    background: #151a38;
+    border: 2px solid #00d9ff;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 0 40px rgba(0, 217, 255, 0.3);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.title {
+    font-size: 3.5rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #00d9ff;
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    color: #a0aec0;
+}
+
+.auth-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.auth-section input {
+    padding: 12px 15px;
+    border: 2px solid #2d3e5f;
+    background: #0f1229;
+    color: #ffffff;
+    border-radius: 10px;
+    font-size: 1rem;
+}
+
+.auth-section input:focus {
+    outline: none;
+    border-color: #00d9ff;
+    box-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
+}
+
+.auth-btn {
+    grid-column: 1 / -1;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #00d9ff, #0099cc);
+    border: none;
+    color: #000;
+    font-weight: bold;
+    font-size: 1.1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.auth-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+}
+
+.auth-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.status-msg {
+    text-align: center;
+    margin-top: 10px;
+    min-height: 20px;
+    color: #ff0055;
+    font-size: 0.9rem;
+}
+
+.game-section {
+    display: none;
+}
+
+.game-section.active {
+    display: block;
+}
+
+.game-mode-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.mode-btn {
+    padding: 20px;
+    background: #1a1f47;
+    border: 2px solid #2d3e5f;
+    color: #00d9ff;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.mode-btn:hover {
+    border-color: #00d9ff;
+    background: #252d52;
+    transform: translateY(-3px);
+    box-shadow: 0 0 15px rgba(0, 217, 255, 0.3);
+}
+
+.mode-btn.active {
+    border-color: #00d9ff;
+    background: rgba(0, 217, 255, 0.1);
+}
+
+.game-container {
+    text-align: center;
+}
+
+.reaction-box {
+    width: 100%;
+    height: 300px;
+    background: #1a1f47;
+    border: 3px solid #2d3e5f;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    font-weight: bold;
+    margin: 30px 0;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.1s;
+}
+
+.reaction-box.waiting {
+    background: #1a1f47;
+    color: #a0aec0;
+    border-color: #2d3e5f;
+}
+
+.reaction-box.ready {
+    background: #00f541;
+    color: #000;
+    border-color: #00f541;
+    box-shadow: 0 0 30px rgba(0, 245, 65, 0.5);
+}
+
+.reaction-box.success {
+    background: #00f541;
+    color: #000;
+    border-color: #00f541;
+    animation: bounce 0.6s;
+}
+
+.reaction-box.fail {
+    background: #ff0055;
+    color: #fff;
+    border-color: #ff0055;
+    animation: shake 0.4s;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-30px); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+    20%, 40%, 60%, 80% { transform: translateX(10px); }
+}
+
+.lights-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 40px 0;
+    flex-wrap: wrap;
+}
+
+.light {
+    width: 80px;
+    height: 120px;
+    background: #ff0055;
+    border-radius: 12px;
+    transition: all 0.1s;
+    box-shadow: 0 0 20px rgba(255, 0, 85, 0.4);
+    cursor: pointer;
+}
+
+.light.active {
+    background: #00f541;
+    box-shadow: 0 0 40px rgba(0, 245, 65, 0.6);
+    transform: scale(1.1);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin: 30px 0;
+}
+
+.stat-box {
+    background: #1a1f47;
+    border: 1px solid #2d3e5f;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #a0aec0;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.stat-value {
+    font-size: 1.8rem;
+    color: #00d9ff;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+}
+
+.control-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.control-btn {
+    padding: 15px 20px;
+    border: 2px solid #2d3e5f;
+    background: transparent;
+    color: #00d9ff;
+    font-weight: bold;
+    font-size: 1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.control-btn:hover {
+    border-color: #00d9ff;
+    background: rgba(0, 217, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.control-btn.primary {
+    background: linear-gradient(135deg, #00d9ff, #0099cc);
+    color: #000;
+    border: none;
+    font-weight: bold;
+}
+
+.control-btn.primary:hover {
+    box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+}
+
+.password-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 30px 0;
+}
+
+.password-btn {
+    padding: 20px;
+    background: #1a1f47;
+    border: 2px solid #2d3e5f;
+    color: #00d9ff;
+    font-size: 1.3rem;
+    font-weight: bold;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.password-btn:hover {
+    border-color: #00d9ff;
+    background: #252d52;
+    transform: translateY(-3px);
+}
+
+.password-display {
+    background: #0f1229;
+    border: 2px solid #2d3e5f;
+    padding: 20px;
+    border-radius: 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 1.5rem;
+    color: #00d9ff;
+    margin: 20px 0;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 5px;
+}
+
+.user-info {
+    background: #1a1f47;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: right;
+}
+
+.user-info span {
+    color: #00d9ff;
+    font-weight: bold;
+}
+
+.logout-btn {
+    padding: 10px 15px;
+    background: #ff0055;
+    border: none;
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.logout-btn:hover {
+    background: #cc0044;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .auth-section {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .password-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .reaction-box {
+        height: 200px;
+        font-size: 2rem;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title">REACT<span style="color: #ff006e;">X</span></div>
+            <div class="subtitle">⚡ Elite Reaction Testing Platform</div>
+        </div>
+
+        <!-- AUTH SECTION -->
+        <div id="authSection" class="auth-section">
+            <input type="email" id="email" placeholder="Email" />
+            <input type="password" id="password" placeholder="Password (min 6 chars)" />
+            <button class="auth-btn" onclick="handleAuth()">Create Account / Login</button>
+            <div class="status-msg" id="authMsg"></div>
+        </div>
+
+        <!-- GAME SECTION -->
+        <div id="gameSection" class="game-section">
+            <div class="user-info">
+                User: <span id="userDisplay">-</span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+
+            <!-- MODE SELECTOR -->
+            <div class="game-mode-selector">
+                <button class="mode-btn active" onclick="switchMode('classic')">⚡ CLASSIC TEST</button>
+                <button class="mode-btn" onclick="switchMode('f1')">🏎️ F1 LIGHTS</button>
+                <button class="mode-btn" onclick="switchMode('password')">🔐 PASSWORD</button>
+                <button class="mode-btn" onclick="switchMode('sequence')">🎮 SEQUENCE</button>
+            </div>
+
+            <!-- CLASSIC GAME -->
+            <div id="classicGame" class="game-container">
+                <h2 style="margin-bottom: 20px;">⚡ Classic Reaction Test</h2>
+                <p style="color: #a0aec0; margin-bottom: 20px;">Wait for GREEN, then click or press SPACE!</p>
+                
+                <div class="reaction-box waiting" id="classicBox">
+                    <span id="classicText">Click to Start</span>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Current</div>
+                        <div class="stat-value" id="classicCurrent">-</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Best</div>
+                        <div class="stat-value" id="classicBest">-</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Average</div>
+                        <div class="stat-value" id="classicAvg">-</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Rounds</div>
+                        <div class="stat-value" id="classicRounds">0</div>
+                    </div>
+                </div>
+
+                <div class="control-buttons">
+                    <button class="control-btn primary" onclick="classicGame.start()">START TEST</button>
+                    <button class="control-btn" onclick="resetStats()">RESET STATS</button>
+                </div>
+            </div>
+
+            <!-- F1 GAME -->
+            <div id="f1Game" class="game-container" style="display: none;">
+                <h2 style="margin-bottom: 20px;">🏎️ F1 Start Lights</h2>
+                <p style="color: #a0aec0; margin-bottom: 20px;">React when lights turn GREEN!</p>
+                
+                <div class="lights-container" id="lightsContainer">
+                    <div class="light"></div>
+                    <div class="light"></div>
+                    <div class="light"></div>
+                    <div class="light"></div>
+                    <div class="light"></div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Reaction</div>
+                        <div class="stat-value" id="f1Time">-</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Best</div>
+                        <div class="stat-value" id="f1Best">-</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Average</div>
+                        <div class="stat-value" id="f1Avg">-</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">False Starts</div>
+                        <div class="stat-value" id="f1False">0</div>
+                    </div>
+                </div>
+
+                <div class="control-buttons">
+                    <button class="control-btn primary" onclick="f1Game.start()">START RACE</button>
+                    <button class="control-btn" onclick="resetStats()">RESET STATS</button>
+                </div>
+            </div>
+
+            <!-- PASSWORD GAME -->
+            <div id="passwordGame" class="game-container" style="display: none;">
+                <h2 style="margin-bottom: 20px;">🔐 Password Memory Game</h2>
+                <p style="color: #a0aec0; margin-bottom: 20px;">Type the password quickly and accurately!</p>
+                
+                <div class="password-display" id="passwordDisplay">PASSWORD APPEARS HERE</div>
+
+                <input type="text" id="passwordInput" placeholder="Type the password here" style="width: 100%; padding: 15px; background: #0f1229; border: 2px solid #2d3e5f; color: #00d9ff; border-radius: 10px; font-size: 1.1rem; margin-bottom: 20px;" />
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Time</div>
+                        <div class="stat-value" id="pwdTime">-</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Accuracy</div>
+                        <div class="stat-value" id="pwdAccuracy">-</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Best</div>
+                        <div class="stat-value" id="pwdBest">-</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Score</div>
+                        <div class="stat-value" id="pwdScore">0</div>
+                    </div>
+                </div>
+
+                <div class="control-buttons">
+                    <button class="control-btn primary" onclick="passwordGame.start()">START GAME</button>
+                    <button class="control-btn" onclick="resetStats()">RESET STATS</button>
+                </div>
+            </div>
+
+            <!-- SEQUENCE GAME -->
+            <div id="sequenceGame" class="game-container" style="display: none;">
+                <h2 style="margin-bottom: 20px;">🎮 Sequence Memory</h2>
+                <p style="color: #a0aec0; margin-bottom: 20px;">Click buttons in the order shown!</p>
+                
+                <div class="password-grid" id="sequenceButtons">
+                    <button class="password-btn" onclick="sequenceGame.click(0)">1</button>
+                    <button class="password-btn" onclick="sequenceGame.click(1)">2</button>
+                    <button class="password-btn" onclick="sequenceGame.click(2)">3</button>
+                    <button class="password-btn" onclick="sequenceGame.click(3)">4</button>
+                    <button class="password-btn" onclick="sequenceGame.click(4)">5</button>
+                    <button class="password-btn" onclick="sequenceGame.click(5)">6</button>
+                    <button class="password-btn" onclick="sequenceGame.click(6)">7</button>
+                    <button class="password-btn" onclick="sequenceGame.click(7)">8</button>
+                    <button class="password-btn" onclick="sequenceGame.click(8)">9</button>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Level</div>
+                        <div class="stat-value" id="seqLevel">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Score</div>
+                        <div class="stat-value" id="seqScore">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Best Level</div>
+                        <div class="stat-value" id="seqBest">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Status</div>
+                        <div class="stat-value" id="seqStatus">Ready</div>
+                    </div>
+                </div>
+
+                <div class="control-buttons">
+                    <button class="control-btn primary" onclick="sequenceGame.start()">START GAME</button>
+                    <button class="control-btn" onclick="resetStats()">RESET STATS</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+let currentUser = null;
+let currentMode = 'classic';
+let allStats = {};
+
+const classicGame = {
+    times: [],
+    state: 'idle',
+    start() {
+        if (this.state !== 'idle') return;
+        this.state = 'waiting';
+        const box = document.getElementById('classicBox');
+        const text = document.getElementById('classicText');
+        box.className = 'reaction-box waiting';
+        text.textContent = 'Wait...';
+        playSound(800, 50);
+        
+        setTimeout(() => {
+            if (this.state === 'waiting') {
+                this.state = 'ready';
+                this.startTime = Date.now();
+                box.className = 'reaction-box ready';
+                text.textContent = 'GO!';
+                playSound(1500, 100);
+            }
+        }, Math.random() * 3000 + 1000);
+    },
+    react() {
+        const box = document.getElementById('classicBox');
+        const text = document.getElementById('classicText');
+        
+        if (this.state === 'waiting') {
+            this.state = 'cooldown';
+            box.className = 'reaction-box fail';
+            text.textContent = '❌ TOO EARLY!';
+            playSound(300, 200);
+            setTimeout(() => { this.state = 'idle'; }, 1500);
+        } else if (this.state === 'ready') {
+            this.state = 'cooldown';
+            const time = Date.now() - this.startTime;
+            this.times.push(time);
+            
+            box.className = 'reaction-box success';
+            text.textContent = '✓ ' + time + 'ms';
+            playSound(1200, 100);
+            
+            const best = Math.min(...this.times);
+            const avg = Math.round(this.times.reduce((a, b) => a + b) / this.times.length);
+            
+            document.getElementById('classicCurrent').textContent = time + 'ms';
+            document.getElementById('classicBest').textContent = best + 'ms';
+            document.getElementById('classicAvg').textContent = avg + 'ms';
+            document.getElementById('classicRounds').textContent = this.times.length;
+            
+            allStats[currentUser] = allStats[currentUser] || {};
+            allStats[currentUser].classic = { times: this.times, best, avg };
+            localStorage.setItem('allStats', JSON.stringify(allStats));
+            
+            setTimeout(() => { this.state = 'idle'; }, 1000);
+        }
+    }
+};
+
+const f1Game = {
+    times: [],
+    falseStarts: 0,
+    state: 'idle',
+    start() {
+        if (this.state !== 'idle') return;
+        this.state = 'waiting';
+        document.querySelectorAll('#lightsContainer .light').forEach(l => l.classList.remove('active'));
+        playSound(800, 50);
+        
+        setTimeout(() => {
+            if (this.state === 'waiting') {
+                this.state = 'ready';
+                this.startTime = Date.now();
+                document.querySelectorAll('#lightsContainer .light').forEach(l => l.classList.add('active'));
+                playSound(1500, 100);
+            }
+        }, Math.random() * 3000 + 2000);
+    },
+    react() {
+        const lights = document.querySelectorAll('#lightsContainer .light');
+        if (!lights[0].classList.contains('active')) {
+            this.falseStarts++;
+            document.getElementById('f1False').textContent = this.falseStarts;
+            playSound(300, 200);
+        } else if (this.state === 'ready') {
+            this.state = 'cooldown';
+            const time = Date.now() - this.startTime;
+            this.times.push(time);
+            
+            document.getElementById('f1Time').textContent = time + 'ms';
+            playSound(1200, 100);
+            
+            const best = Math.min(...this.times);
+            const avg = Math.round(this.times.reduce((a, b) => a + b) / this.times.length);
+            
+            document.getElementById('f1Best').textContent = best + 'ms';
+            document.getElementById('f1Avg').textContent = avg + 'ms';
+            
+            allStats[currentUser] = allStats[currentUser] || {};
+            allStats[currentUser].f1 = { times: this.times, best, avg, falseStarts: this.falseStarts };
+            localStorage.setItem('allStats', JSON.stringify(allStats));
+            
+            setTimeout(() => { this.state = 'idle'; }, 1500);
+        }
+    }
+};
+
+const passwordGame = {
+    password: '',
+    startTime: 0,
+    times: [],
+    score: 0,
+    start() {
+        const passwords = ['HELLO123', 'REACT2024', 'SPEED999', 'PASSWORD', 'GAMING01'];
+        this.password = passwords[Math.floor(Math.random() * passwords.length)];
+        this.startTime = Date.now();
+        document.getElementById('passwordDisplay').textContent = this.password;
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('passwordInput').focus();
+        document.getElementById('passwordDisplay').style.background = 'rgba(0, 245, 65, 0.1)';
+        
+        document.getElementById('passwordInput').onkeydown = (e) => {
+            if (e.key === 'Enter') this.check();
+        };
+    },
+    check() {
+        const input = document.getElementById('passwordInput').value.toUpperCase();
+        const time = Date.now() - this.startTime;
+        
+        if (input === this.password) {
+            this.times.push(time);
+            this.score += 100;
+            
+            document.getElementById('pwdTime').textContent = (time / 1000).toFixed(2) + 's';
+            document.getElementById('pwdAccuracy').textContent = '100%';
+            document.getElementById('pwdScore').textContent = this.score;
+            document.getElementById('pwdBest').textContent = Math.min(...this.times) + 'ms';
+            
+            playSound(1200, 100);
+            document.getElementById('passwordDisplay').style.background = 'rgba(0, 245, 65, 0.3)';
+        } else {
+            document.getElementById('pwdAccuracy').textContent = '❌ Wrong';
+            playSound(300, 200);
+        }
+        
+        allStats[currentUser] = allStats[currentUser] || {};
+        allStats[currentUser].password = { times: this.times, score: this.score };
+        localStorage.setItem('allStats', JSON.stringify(allStats));
+    }
+};
+
+const sequenceGame = {
+    sequence: [],
+    userSequence: [],
+    level: 0,
+    score: 0,
+    best: 0,
+    start() {
+        this.sequence = [];
+        this.userSequence = [];
+        this.level = 0;
+        this.score = 0;
+        this.nextRound();
+    },
+    nextRound() {
+        this.level++;
+        this.userSequence = [];
+        const randomNum = Math.floor(Math.random() * 9);
+        this.sequence.push(randomNum);
+        
+        document.getElementById('seqLevel').textContent = this.level;
+        document.getElementById('seqStatus').textContent = 'Watch...';
+        
+        this.playSequence();
+    },
+    playSequence() {
+        let delay = 600;
+        this.sequence.forEach((num, index) => {
+            setTimeout(() => {
+                this.flashButton(num);
+            }, delay * (index + 1));
+        });
+        
+        setTimeout(() => {
+            document.getElementById('seqStatus').textContent = 'Your Turn!';
+        }, delay * this.sequence.length + 600);
+    },
+    flashButton(num) {
+        const btn = document.querySelectorAll('#sequenceButtons .password-btn')[num];
+        btn.style.background = '#00d9ff';
+        playSound(800 + num * 100, 200);
+        setTimeout(() => {
+            btn.style.background = '';
+        }, 300);
+    },
+    click(num) {
+        this.userSequence.push(num);
+        this.flashButton(num);
+        
+        if (this.userSequence[this.userSequence.length - 1] !== this.sequence[this.userSequence.length - 1]) {
+            document.getElementById('seqStatus').textContent = 'Game Over!';
+            playSound(300, 200);
+            this.best = Math.max(this.best, this.level);
+            document.getElementById('seqBest').textContent = this.best;
+            return;
+        }
+        
+        if (this.userSequence.length === this.sequence.length) {
+            this.score += 10;
+            document.getElementById('seqScore').textContent = this.score;
+            
+            allStats[currentUser] = allStats[currentUser] || {};
+            allStats[currentUser].sequence = { level: this.level, score: this.score, best: this.best };
+            localStorage.setItem('allStats', JSON.stringify(allStats));
+            
+            setTimeout(() => this.nextRound(), 1000);
+        }
+    }
+};
+
+function playSound(freq, duration) {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration / 1000);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + duration / 1000);
+    } catch (e) {}
+}
+
+function handleAuth() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    
+    if (!email || password.length < 6) {
+        document.getElementById('authMsg').textContent = '❌ Email and 6+ char password required';
+        return;
+    }
+    
+    currentUser = email;
+    allStats = JSON.parse(localStorage.getItem('allStats') || '{}');
+    
+    document.getElementById('authSection').style.display = 'none';
+    document.getElementById('gameSection').classList.add('active');
+    document.getElementById('userDisplay').textContent = email;
+    
+    switchMode('classic');
+}
+
+function logout() {
+    currentUser = null;
+    document.getElementById('email').value = '';
+    document.getElementById('password').value = '';
+    document.getElementById('authMsg').textContent = '';
+    document.getElementById('authSection').style.display = 'grid';
+    document.getElementById('gameSection').classList.remove('active');
+}
+
+function switchMode(mode) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    document.getElementById('classicGame').style.display = 'none';
+    document.getElementById('f1Game').style.display = 'none';
+    document.getElementById('passwordGame').style.display = 'none';
+    document.getElementById('sequenceGame').style.display = 'none';
+    
+    if (mode === 'classic') document.getElementById('classicGame').style.display = 'block';
+    if (mode === 'f1') document.getElementById('f1Game').style.display = 'block';
+    if (mode === 'password') document.getElementById('passwordGame').style.display = 'block';
+    if (mode === 'sequence') document.getElementById('sequenceGame').style.display = 'block';
+}
+
+function resetStats() {
+    if (confirm('Reset stats for this game?')) {
+        if (currentMode === 'classic') classicGame.times = [];
+        if (currentMode === 'f1') f1Game.times = [];
+        if (currentMode === 'password') passwordGame.times = [];
+        if (currentMode === 'sequence') sequenceGame.best = 0;
+        
+        document.querySelectorAll('.stat-value').forEach(e => e.textContent = '-');
+    }
+}
+
+// Setup click handlers
+document.getElementById('classicBox').addEventListener('click', () => classicGame.react());
+document.getElementById('lightsContainer').addEventListener('click', () => f1Game.react());
+
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && currentMode === 'classic') {
+        e.preventDefault();
+        classicGame.react();
+    }
+    if (e.code === 'Space' && currentMode === 'f1') {
+        e.preventDefault();
+        f1Game.react();
+    }
+});
+    </script>
+</body>
+</html>
